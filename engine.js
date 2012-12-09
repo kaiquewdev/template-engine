@@ -96,3 +96,9 @@ Template.process = function (c, d) {
 
     return out;
 };
+
+Template.buffer = function (c, d) {
+    var buffer = require('buffer');    
+
+    return new Buffer( Template.process(c, d), 'utf-8');
+};
