@@ -9,7 +9,7 @@ Template.variable = function (context, data) {
             out = '';
 
         // cache representation
-        self.repr = context;
+        self.repr = c;
         // varible represetation of sub
         self.at = '@';
         // find ocurrences in the context
@@ -39,6 +39,8 @@ Template.variable = function (context, data) {
             } 
 
             self.out = c;
+        } else {
+            self.out = out;    
         }
     }; 
 
@@ -46,5 +48,45 @@ Template.variable = function (context, data) {
 };
 
 Template.context = function (context, data) {
+    var ctx = function () {
+        var self = this,
+            c = context,
+            d = data,
+            out = '';
+
+        // cache pure representation
+        self.repr = c;
+        // interpolation match
+        self.itrp = ['{{', '}}'];
+        // match ocurrences
+        self.extractCtx = function (context) {
+            var out = '',
+                s = c.indexOf(self.itrp[0]) + self.itrp[0].length,
+                e = c.indexOf(self.itrp[1]);
+
+            out = context.slice(s, e);
+
+            return out;
+        };
+        // replace context in cache procing output
+        self.replaceCtx = function (context, replacement) {
+            var out = '',
+                s = c.indexOf(self.itrp[0]),
+                e = c.indexOf(self.itrp[1]) + self.itrp[1].length;
+
+            out = context.replace(
+                context.slice(s, e),
+                replacement
+            );
+
+            return out;
+        };
+
+        out = self.extractCtx(c);
+        out = Template.variable(out, d).out;
         
+        self.out = self.replaceCtx(c, out);
+    };
+
+    return new ctx();
 };
