@@ -30,6 +30,11 @@ suite('Template Engine Suite', function () {
                 data = { name: 'Kaique', last: 'Silva' },
                 result = data['last'] + ' ' + data['name'] + ', ' +
                          data['name'] + ' ' + data['last'];
+
+            assert.equal(
+                template.variable( context, data ).out,
+                result
+            );
         });
     });
 
