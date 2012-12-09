@@ -90,3 +90,9 @@ Template.context = function (context, data) {
 
     return new ctx();
 };
+
+Template.process = function (c, d) {
+    var out = Template.context(c, d).out;
+
+    return out;
+};
