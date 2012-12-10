@@ -1,4 +1,4 @@
 Template Engine
 ===============
 
-Simple template engine for node js.
+Simple template engine for node.js!

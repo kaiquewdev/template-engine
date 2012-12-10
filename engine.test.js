@@ -73,5 +73,21 @@ suite('Template Engine Suite', function () {
                 result
             );
         });
+
+        test('double context', function () {
+            var context = 'hi {{@name}} {{@last}}',
+                data = { name: 'Kaique', last: 'Silva' },
+                result = 'hi Kaique Silva';
+
+            assert.equal(
+                template.context(context, data).nctx,
+                2
+            );
+
+            assert.equal(
+                template.context( context, data ).out,
+                result
+            );
+        });
     });    
 });

@@ -61,18 +61,20 @@ Template.context = function (context, data) {
         // match ocurrences
         self.extractCtx = function (context) {
             var out = '',
-                s = c.indexOf(self.itrp[0]) + self.itrp[0].length,
-                e = c.indexOf(self.itrp[1]);
+                s = context.indexOf(self.itrp[0]) + self.itrp[0].length,
+                e = context.indexOf(self.itrp[1]);
 
-            out = context.slice(s, e);
+            if ( s > -1 && e > -1 ) {
+                out = context.slice(s, e);
+            }
 
             return out;
         };
         // replace context in cache procing output
         self.replaceCtx = function (context, replacement) {
             var out = '',
-                s = c.indexOf(self.itrp[0]),
-                e = c.indexOf(self.itrp[1]) + self.itrp[1].length;
+                s = context.indexOf(self.itrp[0]),
+                e = context.indexOf(self.itrp[1]) + self.itrp[1].length;
 
             out = context.replace(
                 context.slice(s, e),
@@ -81,11 +83,46 @@ Template.context = function (context, data) {
 
             return out;
         };
+        // ctx number
+        self.nctx = (function () {
+            var c = 0,
+                s = context.indexOf(self.itrp[0]),
+                e = context.indexOf(self.itrp[1]);
 
-        out = self.extractCtx(c);
-        out = Template.variable(out, d).out;
-        
-        self.out = self.replaceCtx(c, out);
+            while (true) {
+                if ( s > -1 && e > -1 ) {
+                    c += 1;
+                    s = context.indexOf(self.itrp[0], 
+                                        s + self.itrp[0].length);
+                    e = context.indexOf(self.itrp[1],
+                                        e + self.itrp[1].length);
+                } else {
+                    break;    
+                }    
+            }
+
+            return c;
+        } ());
+        // change context
+        self.applyContext = function (context, data) {
+            var c = self.extractCtx(context),
+                d = data,
+                ctx = Template.variable(c, d).out;
+
+            c = self.replaceCtx(context, ctx);
+
+            return c;
+        };
+
+        if ( c ) {
+            out = c;
+
+            for ( var i = 0; i < self.nctx; i++ ) {
+                out = self.applyContext(out, d);    
+            }
+        }
+
+        self.out = out;
     };
 
     return new ctx();
