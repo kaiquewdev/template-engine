@@ -1,6 +1,22 @@
 var Template = exports,
     s = this;
 
+Template.filter = function (name, operation) {
+    var f = function () {
+        var self = this,
+            n = name,
+            o = operation;
+
+        self.operation = {};
+
+        if ( name && operation ) {
+            self.operation[name] = operation;
+        }
+    };
+
+    return new f();
+};
+
 Template.variable = function (context, data) {
     var v = function () {
         var self = this,

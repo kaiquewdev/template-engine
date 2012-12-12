@@ -2,6 +2,19 @@ var assert = require('assert'),
     template = require('./engine');
 
 suite('Template Engine Suite', function () {
+    suite('Filter', function () {
+        test('define and user', function () {
+            var filter = template.filter('sum', function (a, b) {
+                return a + b;
+            });    
+
+            assert.equal(
+                filter.operatio.sum(5, 5),
+                10
+            );
+        });    
+    });
+
     suite('Variables', function () {
         test('single variable', function () {
             var context = '@name',
