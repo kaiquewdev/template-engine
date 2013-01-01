@@ -1,12 +1,17 @@
 var self = this; 
 
 (function () {
-    var Engine = exports,
-        Filter = function () {};
+    var Engine = exports;
+        // Internal methods
+        Engine.internal = {};
 
+    // Filter definition
+    var Filter = Engine.internal.filter = function () {};
+    // Filter composition
     Filter.prototype = {
+        // cache operations
         operations: [],
-
+        // add to cache operations
         add: function addOperation ( name, fn ) {
             var self = this,
                 name = name || 'anonymous',
@@ -25,16 +30,32 @@ var self = this;
             } 
 
             return self;
+        },
+        // invoke from cache an operation
+        invoke: function invokeOperation ( name ) {
+            var self = this,
+                name = name || 'anonymous';
+
+            if ( 'string' !== typeof( name ) ) {
+                throw TypeError(
+                    'First parameter not is a string!'
+                );    
+            } else {
+                return self.operations.map(function (o) {
+                    if ( name === o[0] ) {
+                        return o[1];    
+                    }  
+                })[0]; 
+            }
+
+            return undefined;
         }
     };
-
+    // Define a engine filter
     Engine.filter = new Filter();
 }).call(self);
 
-var Template = exports,
-    s = this;
-
-Template.variable = function (context, data) {
+/*Template.variable = function (context, data) {
     var v = function () {
         var self = this,
             c = context,
@@ -171,4 +192,4 @@ Template.buffer = function (c, d) {
     var buffer = require('buffer');    
 
     return new Buffer( Template.process(c, d), 'utf-8');
-};
+};*/

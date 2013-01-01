@@ -4,14 +4,14 @@ var assert = require('assert'),
 suite('Template Engine Suite', function () {
     suite('Filter', function () {
         test('Add operation', function () {
-            var operations = template.operations;
+            var operations = template.filter.operations;
 
             assert.equal(
                 operations.length,
                 0
             );
 
-            template.operation.add('hello', function () {
+            template.filter.add('hello', function () {
                 return 'Hello';    
             }); 
 
@@ -22,47 +22,20 @@ suite('Template Engine Suite', function () {
         });
 
         test('Invoke operation', function () {
-            template.operation.add('hello', function () {
-                return 'Hello';    
-            }); 
+            template.filter.add('hello', function () {
+                return 'simple hello';    
+            });
 
             assert.equal(
-                typeof template.operation.invoke('hello'),
-                'function'
-            );
-        });
-
-        test('Invoke a undefined function, has fail', function () {
-            assert.equal(
-                template.operation.invoke('hell'),
-                undefined
+                'function' === typeof( 
+                    template.filter.invoke('hello') 
+                ),
+                true
             );    
         });
-
-        test('filter to trigger direct operations', function () {
-            template.operation.add('sum', function (a, b) {
-                return a + b;    
-            });    
-
-            assert(
-                template.filter(['sum', 5, 5]),
-                10
-            );
-        });
-
-        /*test('define and user', function () {
-            var filter = template.filter('sum', function (a, b) {
-                return a + b;
-            });    
-
-            assert.equal(
-                filter.operation.sum(5, 5),
-                10
-            );
-        });*/    
     });
 
-    suite('Variables', function () {
+    /*suite('Variables', function () {
         test('single variable', function () {
             var context = '@name',
                 data = { name: 'Kaique' },
@@ -149,5 +122,5 @@ suite('Template Engine Suite', function () {
                 result
             );
         });
-    });    
+    });*/    
 });
