@@ -1,21 +1,38 @@
-var Template = exports,
-    s = this;
+var self = this; 
 
-Template.filter = function (name, operation) {
-    var f = function () {
-        var self = this,
-            n = name,
-            o = operation;
+(function () {
+    var Engine = exports,
+        Filter = function () {};
 
-        self.operation = {};
+    Filter.prototype = {
+        operations: [],
 
-        if ( name && operation ) {
-            self.operation[name] = operation;
+        add: function addOperation ( name, fn ) {
+            var self = this,
+                name = name || 'anonymous',
+                fn = fn || function () {};
+
+            if ( 'string' !== typeof( name ) ) {
+                throw TypeError(
+                    'First parameter not is a string!'
+                ); 
+            } if ( 'function' !== typeof( fn ) ) {
+                throw TypeError(
+                    'Second parameter not is a function!'
+                ); 
+            } else {
+                self.operations.push([ name, fn ]);
+            } 
+
+            return self;
         }
     };
 
-    return new f();
-};
+    Engine.filter = new Filter();
+}).call(self);
+
+var Template = exports,
+    s = this;
 
 Template.variable = function (context, data) {
     var v = function () {
