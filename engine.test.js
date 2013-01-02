@@ -35,14 +35,21 @@ suite('Template Engine Suite', function () {
         });
     });
 
-    /*suite('Variables', function () {
+    suite('Variables', function () {
+        test('ocurrences operations', function () {
+            assert.equal(
+                template.variable.ocurrences('@name', '@name'),
+                1
+            );    
+        });
+
         test('single variable', function () {
             var context = '@name',
                 data = { name: 'Kaique' },
                 result = data['name'];
 
             assert.equal(
-                template.variable( context, data ).out,
+                template.variable.change( context, data ),
                 result
             );
         });    
@@ -53,7 +60,7 @@ suite('Template Engine Suite', function () {
                 result = data['name'] + ' ' + data['last'];
 
             assert.equal(
-                template.variable( context, data ).out,
+                template.variable.change( context, data ),
                 result
             );
         });
@@ -65,20 +72,48 @@ suite('Template Engine Suite', function () {
                          data['name'] + ' ' + data['last'];
 
             assert.equal(
-                template.variable( context, data ).out,
+                template.variable.change( context, data ),
                 result
             );
         });
     });
 
     suite('Context', function () {
+        test('extract not brances', function () {
+            assert.equal(
+                template.context.extract('{{Hello @name}}'),
+                'Hello @name'
+            );    
+        });
+
+        test('extract with braces', function () {
+            assert.equal(
+                template.context.extract('{{Hello @name}}', true),
+                '{{Hello @name}}'
+            );    
+        });
+
+        test('ocurrences', function () {
+            assert.equal(
+                template.context.ocurrences('{{ Hello @name }}'),
+                1
+            );
+
+            assert.equal(
+                template.context.ocurrences(
+                    '{{ Hello @name }} {{ and @last }}'
+                ),
+                2
+            );
+        });
+
         test('single value', function () {
             var context = '{{ Hello @name }}',
                 data = { name: 'Kaique' },
                 result = ' Hello Kaique ';
 
             assert.equal(
-                template.context( context, data ).out,
+                template.context.change( context, data ),
                 result
             ); 
         });    
@@ -91,7 +126,7 @@ suite('Template Engine Suite', function () {
                          'São Paulo ';
 
             assert.equal(
-                template.context( context, data ).out,
+                template.context.change( context, data ),
                 result
             );
         });
@@ -102,7 +137,7 @@ suite('Template Engine Suite', function () {
                 result = 'hi Kaique';
 
             assert.equal(
-                template.context( context, data ).out,
+                template.context.change( context, data ),
                 result
             );
         });
@@ -113,14 +148,9 @@ suite('Template Engine Suite', function () {
                 result = 'hi Kaique Silva';
 
             assert.equal(
-                template.context(context, data).nctx,
-                2
-            );
-
-            assert.equal(
-                template.context( context, data ).out,
+                template.context.change( context, data ),
                 result
             );
         });
-    });*/    
+    });
 });

@@ -49,147 +49,155 @@ var self = this;
             }
 
             return undefined;
-        }
+        },
+        // call from cache an operation
+        trigger: function triggerOperation ( options ) {
+            var self = this,
+                name = options[0] || 'anonymous';
+
+            return self.invoke(name);
+        },
     };
     // Define a engine filter
     Engine.filter = new Filter();
-}).call(self);
 
-/*Template.variable = function (context, data) {
-    var v = function () {
-        var self = this,
-            c = context,
-            d = data,
-            out = '';
+    // Variable definition
+    var Variable = Engine.internal.variable = function () {};
+    // Variable context
+    Variable.prototype = {
+        identifier: '@',
 
-        // cache representation
-        self.repr = c;
-        // varible represetation of sub
-        self.at = '@';
-        // find ocurrences in the context
-        self.ocurr = function (context, key) {
-            var c = 0,
+        ocurrences: function variableOcurrences ( context, key ) {
+            var out = 0,
                 last = 0;
 
             while ( true ) {
-                if ( context.indexOf(key, last) > -1 ) {
-                    c += 1;
-                    last = context.indexOf(key, last) + 1;
+                if ( context.indexOf( key, last ) > -1 ) {
+                    out += 1;
+                    last = context.indexOf( key, last ) + 1;
                 } else {
                     break;    
                 } 
             }
 
-            return c;
-        };
+            return out;
+        },
 
-        if ( d ) {
-            for ( var key in d ) {
-                var r = self.at + key,
-                    n = self.ocurr(c, r);
+        change: function changeVariable ( context, data ) {
+            var self = this,
+                _context = context || '',
+                data = data || '',
+                out = '';
 
-                for ( var i = 0; i < n; i++ )
-                    c = c.replace(r, d[key]);
-            } 
+            if ( _context && data ) {
+                for ( var key in data ) {
+                    var variable = self.identifier + key,
+                        value = data[ key ],
+                        n = self.ocurrences( _context, variable );    
 
-            self.out = c;
-        } else {
-            self.out = out;    
-        }
-    }; 
+                    for ( var i = 0; i < n; i++ ) {
+                        _context = _context.replace(
+                            variable, value
+                        );
+                    }
+                }    
 
-    return new v();
-};
-
-Template.context = function (context, data) {
-    var ctx = function () {
-        var self = this,
-            c = context,
-            d = data,
-            out = '';
-
-        // cache pure representation
-        self.repr = c;
-        // interpolation match
-        self.itrp = ['{{', '}}'];
-        // match ocurrences
-        self.extractCtx = function (context) {
-            var out = '',
-                s = context.indexOf(self.itrp[0]) + self.itrp[0].length,
-                e = context.indexOf(self.itrp[1]);
-
-            if ( s > -1 && e > -1 ) {
-                out = context.slice(s, e);
+                out = _context;
             }
 
             return out;
-        };
-        // replace context in cache procing output
-        self.replaceCtx = function (context, replacement) {
-            var out = '',
-                s = context.indexOf(self.itrp[0]),
-                e = context.indexOf(self.itrp[1]) + self.itrp[1].length;
+        }    
+    };
+    // Define engine variable
+    Engine.variable = new Variable();
 
-            out = context.replace(
-                context.slice(s, e),
-                replacement
-            );
+    // Context definition
+    var Context = Engine.internal.context = function () {};
+    // Context in context
+    Context.prototype = {
+        identifier: [ '{{', '}}' ],
+
+        extract: function extractContext ( context, braces ) {
+            var self = this,
+                out = '',
+                begin = -1, end = -1; 
+
+            if ( braces ) {
+                begin = context.indexOf(
+                    self.identifier[0]
+                );
+
+                end = context.indexOf(
+                    self.identifier[1]
+                ) + self.identifier[1].length;
+            } if ( !braces ) {
+                begin = context.indexOf(
+                    self.identifier[0]
+                ) + self.identifier[0].length;
+
+                end = context.indexOf(
+                    self.identifier[1]
+                );  
+            } if ( begin > -1 && end > -1 ) {
+                out = context.slice(
+                    begin, end
+                );    
+            }
 
             return out;
-        };
-        // ctx number
-        self.nctx = (function () {
-            var c = 0,
-                s = context.indexOf(self.itrp[0]),
-                e = context.indexOf(self.itrp[1]);
+        },
 
-            while (true) {
-                if ( s > -1 && e > -1 ) {
-                    c += 1;
-                    s = context.indexOf(self.itrp[0], 
-                                        s + self.itrp[0].length);
-                    e = context.indexOf(self.itrp[1],
-                                        e + self.itrp[1].length);
+        ocurrences: function ocurrencesContext ( context ) {
+            var self = this,
+                out = 0,
+                begin = context.indexOf(
+                    self.identifier[0]
+                ),
+                end = context.indexOf(
+                    self.identifier[1]
+                );
+
+            while ( true ) {
+                if ( begin > -1 && end > -1 ) {
+                    out += 1;
+
+                    begin = context.indexOf(
+                        self.identifier[0],
+                        begin + self.identifier[0].length
+                    );
+
+                    end = context.indexOf(
+                        self.identifier[1],
+                        end + self.identifier[1].length
+                    );
                 } else {
                     break;    
                 }    
             }
 
-            return c;
-        } ());
-        // change context
-        self.applyContext = function (context, data) {
-            var c = self.extractCtx(context),
-                d = data,
-                ctx = Template.variable(c, d).out;
+            return out;
+        },
 
-            c = self.replaceCtx(context, ctx);
+        change: function changeTemplateContext ( context, data ) {
+            var self = this,
+                out = context,
+                n = self.ocurrences( context );
 
-            return c;
-        };
+            for ( var i = 0; i < n; i++ ) {
+                var firstState = self.extract( out, true ),
+                    secondState = Engine.variable.change(
+                        self.extract( out ), data
+                    );
 
-        if ( c ) {
-            out = c;
-
-            for ( var i = 0; i < self.nctx; i++ ) {
-                out = self.applyContext(out, d);    
+                out = out.replace(
+                    firstState,
+                    secondState
+                ); 
             }
+
+            return out;
         }
-
-        self.out = out;
     };
-
-    return new ctx();
-};
-
-Template.process = function (c, d) {
-    var out = Template.context(c, d).out;
-
-    return out;
-};
-
-Template.buffer = function (c, d) {
-    var buffer = require('buffer');    
-
-    return new Buffer( Template.process(c, d), 'utf-8');
-};*/
+    // Context in engine
+    Engine.context = new Context();
+}).call(self);
