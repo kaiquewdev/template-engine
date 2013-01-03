@@ -33,6 +33,40 @@ suite('Template Engine Suite', function () {
                 true
             );    
         });
+
+        test('parse arguments in a context', function () {
+            assert.deepEqual(
+                template.filter.parseArguments('sum', 'sum(1, 2)'),
+                ['1', '2']
+            );    
+        });
+
+        test('find operation in a context', function () {
+            assert.equal(
+                template.filter.find('sum(1, 2)') > 0,
+                false 
+            );
+
+            template.filter.add('sum', function ( a, b ) {
+                return a + b;
+            });
+
+            assert.equal(
+                template.filter.find('sum(1, 2)').length > 0,
+                true
+            );    
+        });
+
+        test('Interpret filter in template context', function () {
+            template.filter.add('sum', function (a, b) {
+                return Number(a) + Number(b);    
+            });
+
+            assert.equal(
+                template.filter.read('sum(1, 2)'),
+                3
+            );
+        });
     });
 
     suite('Variables', function () {

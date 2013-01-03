@@ -1,6 +1,6 @@
-var self = this; 
-
+var self = this;
 (function () {
+    'use strict';
     var Engine = exports;
         // Internal methods
         Engine.internal = {};
@@ -57,6 +57,70 @@ var self = this;
 
             return self.invoke(name);
         },
+        // find a operation in a context
+        find: function findOperation ( context ) {
+            var self = this,
+                operations = self.operations,
+                select = [];
+
+            for ( var i = 0, len = operations.length; 
+                  i < len; i++ ) {
+                if ( context.indexOf( operations[i][0] ) > -1 ) {
+                    select = operations[i];    
+                } 
+            }
+
+            return select;
+        },
+        // parse arguments of context
+        parseArguments: function parseArgumentsOpeartion ( 
+            operationName, context 
+        ) {
+            var self = this,
+                out = [],
+                sailSign = ['(', ')'],
+                sailCondition = [
+                    operationName + sailSign[0],
+                    sailSign[1]
+                ],
+                reSeparator = /,?\s/;
+
+            out = context.slice(
+                context.indexOf( sailCondition[0] ) +
+                sailCondition[0].length,
+                
+                context.indexOf( sailCondition[1] )
+            ).split( reSeparator );
+
+            return out;
+        },
+        // read the context and apply the operation
+        read: function readOperation ( context ) {
+            var self = this,
+                operations = self.operations,
+                selectedOperation = self.find( context );
+
+            if ( selectedOperation.length ) {
+                var selector = {
+                    left: selectedOperation[0] + '(',
+                    right: ')',
+                    separator: ','
+                };
+
+                var selectedArguments = context.slice(
+                    context.indexOf( selector.left ) +
+                    selector.left.length,
+
+                    context.indexOf( selector.right )
+                ).split( selector.separator );
+
+                return selectedOperation[1].apply(
+                    self, selectedArguments
+                );
+            }
+
+            return undefined;
+        }
     };
     // Define a engine filter
     Engine.filter = new Filter();
