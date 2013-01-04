@@ -11,6 +11,8 @@ var self = this;
     Filter.prototype = {
         // cache operations
         operations: [],
+        // sail parameters
+        sailSign: [ '(', ')' ],
         // add to cache operations
         add: function addOperation ( name, fn ) {
             var self = this,
@@ -78,7 +80,7 @@ var self = this;
         ) {
             var self = this,
                 out = [],
-                sailSign = ['(', ')'],
+                sailSign = self.sailSign,
                 sailCondition = [
                     operationName + sailSign[0],
                     sailSign[1]
@@ -97,7 +99,6 @@ var self = this;
         // read the context and apply the operation
         read: function readOperation ( context ) {
             var self = this,
-                operations = self.operations,
                 selectedOperation = self.find( context );
 
             if ( selectedOperation.length ) {
@@ -120,7 +121,28 @@ var self = this;
             }
 
             return undefined;
-        }
+        },
+        // change in context the filter by result
+        change: function changeFilter ( context ) {
+            var self = this,
+                out = context,
+                sailSign = self.sailSign,
+                operation = self.find( context );
+
+            var selection = context.slice(
+                context.indexOf(
+                    operation[0] + sailSign[0]
+                ),
+                context.indexOf( sailSign[1] ) + sailSign[1].length
+            );
+
+            out = context.replace(
+                selection,
+                self.read( context )
+            );
+
+            return out;
+        },
     };
     // Define a engine filter
     Engine.filter = new Filter();
@@ -249,9 +271,20 @@ var self = this;
 
             for ( var i = 0; i < n; i++ ) {
                 var firstState = self.extract( out, true ),
+                    extraction = self.extract( out ),
+                    secondState = '';
+
+                if ( Engine.filter.find( extraction ).length ) {
                     secondState = Engine.variable.change(
-                        self.extract( out ), data
-                    );
+                        Engine.filter.change(
+                            extraction 
+                        ), data
+                    )
+                } else {
+                    secondState = Engine.variable.change(
+                        extraction, data
+                    );    
+                }
 
                 out = out.replace(
                     firstState,

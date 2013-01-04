@@ -66,6 +66,24 @@ suite('Template Engine Suite', function () {
                 template.filter.read('sum(1, 2)'),
                 3
             );
+
+            assert.equal(
+                template.filter.read('1 + 2 equal to sum(1, 2)'),
+                3
+            );
+        });
+
+        test('Change filter by result in context', function () {
+            template.filter.add('sum', function (a, b) {
+                return Number(a) + Number(b);   
+            });    
+
+            assert.equal(
+                template.filter.change(
+                    'The sum of 5 + 5 is sum(5, 5)'
+                ),
+                'The sum of 5 + 5 is 10'
+            );
         });
     });
 
@@ -184,6 +202,30 @@ suite('Template Engine Suite', function () {
             assert.equal(
                 template.context.change( context, data ),
                 result
+            );
+        });
+
+        test('filter in a context', function () {
+            var context = 'The sum of 5 + 5 is {{sum(5, 5)}}!',
+                result = 'The sum of 5 + 5 is 10!';    
+
+            assert.equal(
+                template.context.change( context, {} ),
+                result
+            );
+        });
+
+        test('filter and change context', function () {
+            template.filter.add('say', function ( name ) {
+                return 'Sr. ' + name;
+            });    
+
+            assert.equal(
+                template.context.change(
+                    'Hello {{say(@name)}}',
+                    { name: 'Kaique' }
+                ),
+                'Hello Sr. Kaique'
             );
         });
     });
